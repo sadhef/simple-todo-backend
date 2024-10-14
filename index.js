@@ -8,29 +8,28 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration
+const allowedOrigins = [process.env.FRONTEND_URL, 'https://simple-todo-frontend.vercel.app', 'http://localhost:3000'];
+
 app.use(cors({
-  origin: function(origin, callback) {
-    const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000'];
+  origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
 
 app.use(express.json());
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Could not connect to MongoDB', err));
 
-// Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/todos', auth, require('./routes/todos'));
 
